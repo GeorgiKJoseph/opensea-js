@@ -7,10 +7,10 @@
   "homepage": "https://docs.opensea.io/v1.0/reference",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
+    "url": "git+https://github.com/GeorgiKJoseph/opensea-js.git"
   },
   "bugs": {
-    "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
+    "url": "https://github.com/GeorgiKJoseph/opensea-js/issues"
   },
   "main": "lib/index.js",
   "files": [
