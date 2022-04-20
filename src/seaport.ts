@@ -4398,7 +4398,7 @@ export class OpenSeaPort {
         args[8],
         args[9],
         args[10]
-      ).getABIEncodedTransactionData(txnData)
+      ).getABIEncodedTransactionData()
     return { txnData, txnAbiEncode };
   }
 
