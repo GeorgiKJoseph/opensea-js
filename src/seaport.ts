@@ -4385,7 +4385,8 @@ export class OpenSeaPort {
     ];
 
     // Get transaction raw data
-    const txnAbiEncode: any = this._wyvernProtocol.wyvernExchange.atomicMatch_.getABIEncodedTransactionData(
+    const txnAbiEncode: any = this._wyvernProtocol.wyvernExchange
+      .atomicMatch_(
         args[0],
         args[1],
         args[2],
@@ -4397,7 +4398,7 @@ export class OpenSeaPort {
         args[8],
         args[9],
         args[10]
-      )
+      ).getABIEncodedTransactionData(txnData)
     return { txnData, txnAbiEncode };
   }
 
