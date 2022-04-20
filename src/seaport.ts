@@ -1220,7 +1220,7 @@ export class OpenSeaPort {
     const { buy, sell } = assignOrdersToSides(order, matchingOrder);
 
     const metadata = this._getMetadata(order, referrerAddress);
-    const abiEncode = await this._atomicMatch({
+    const abiEncode: any = await this._atomicMatchData({
       buy,
       sell,
       accountAddress,
@@ -4385,7 +4385,7 @@ export class OpenSeaPort {
     ];
 
     // Get transaction raw data
-    let txnAbiEncode: any = await this._wyvernProtocol.wyvernExchange.atomicMatch_
+    const txnAbiEncode = await this._wyvernProtocol.wyvernExchange.atomicMatch_
       .getABIEncodedTransactionData(
         args[0],
         args[1],
