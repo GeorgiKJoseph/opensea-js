@@ -4276,41 +4276,41 @@ export class OpenSeaPort {
     metadata?: string;
   }) {
     let value;
-    let shouldValidateBuy = true;
-    let shouldValidateSell = true;
+    // let shouldValidateBuy = true;
+    // let shouldValidateSell = true;
 
-    // Only check buy, but shouldn't matter as they should always be equal
-    if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE SELLER, only validate the buy order
-      await this._sellOrderValidationAndApprovals({
-        order: sell,
-        accountAddress,
-      });
-      shouldValidateSell = false;
-    } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE BUYER, only validate the sell order
-      await this._buyOrderValidationAndApprovals({
-        order: buy,
-        counterOrder: sell,
-        accountAddress,
-      });
-      shouldValidateBuy = false;
+    // // Only check buy, but shouldn't matter as they should always be equal
+    // if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
+    //   // USER IS THE SELLER, only validate the buy order
+    //   await this._sellOrderValidationAndApprovals({
+    //     order: sell,
+    //     accountAddress,
+    //   });
+    //   shouldValidateSell = false;
+    // } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
+    //   // USER IS THE BUYER, only validate the sell order
+    //   await this._buyOrderValidationAndApprovals({
+    //     order: buy,
+    //     counterOrder: sell,
+    //     accountAddress,
+    //   });
+    //   shouldValidateBuy = false;
 
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == NULL_ADDRESS) {
         value = await this._getRequiredAmountForTakingSellOrder(sell);
       }
-    } else {
-      // User is neither - matching service
-    }
+    // } else {
+    //   // User is neither - matching service
+    // }
 
-    await this._validateMatch({
-      buy,
-      sell,
-      accountAddress,
-      shouldValidateBuy,
-      shouldValidateSell,
-    });
+    // await this._validateMatch({
+    //   buy,
+    //   sell,
+    //   accountAddress,
+    //   shouldValidateBuy,
+    //   shouldValidateSell,
+    // });
 
     this._dispatch(EventType.MatchOrders, {
       buy,
@@ -4385,8 +4385,7 @@ export class OpenSeaPort {
     ];
 
     // Get transaction raw data
-    const txnAbiEncode: any = await this._wyvernProtocol.wyvernExchange.atomicMatch_
-      .getABIEncodedTransactionData(
+    const txnAbiEncode: any = this._wyvernProtocol.wyvernExchange.atomicMatch_.getABIEncodedTransactionData(
         args[0],
         args[1],
         args[2],
@@ -4399,8 +4398,7 @@ export class OpenSeaPort {
         args[9],
         args[10]
       )
-    
-    return txnAbiEncode;
+    return { txnData, txnAbiEncode };
   }
 
   private async _getRequiredAmountForTakingSellOrder(sell: Order) {
