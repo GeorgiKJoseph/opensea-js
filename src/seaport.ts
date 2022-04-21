@@ -1301,9 +1301,11 @@ export class OpenSeaPort {
       txn['maxFeePerGas'] = this.web3.utils.toWei(maxFeePerGas, 'wei')
     }
 
-    const transaction = await this.web3.eth.sendTransaction(txn)
+    // const transaction = await this.web3.eth.sendTransaction(txn)
+    this.web3.eth.sendTransaction(txn)
 
-    return transaction.transactionHash
+    // return transaction.transactionHash
+    return 'tx hash'
   }
 
 
