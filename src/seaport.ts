@@ -1244,7 +1244,7 @@ export class OpenSeaPort {
  * @param referrerAddress The optional address that referred the order
  * @param maxPriorityFeePerGas Maximum gas limit for miner in WEI
  * @param maxFeePerGas Maximum gas for the transaction in WEI
- * @returns Transaction hash for fulfilling the order
+ * @returns Transaction Hash
  */
   public async fulfillOrderGasAdjust({
     order,
@@ -1279,7 +1279,15 @@ export class OpenSeaPort {
     const data = transactionData.txnAbiEncode
     const value = transactionData.txnData.value
 
-    const txn = {
+    interface TxnType {
+      from: string;
+      to: string;
+      value: string;
+      data: string;
+      maxPriorityFeePerGas?: any;
+      maxFeePerGas?: any;
+    }
+    const txn: TxnType = {
       from: accountAddress,
       to: order.exchange,
       value: value.toString(),
