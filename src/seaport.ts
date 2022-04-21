@@ -1199,6 +1199,12 @@ export class OpenSeaPort {
 
   /*
   * Get fullfillOrder transaction data
+  * @param param0 __namedParamaters Object
+  * @param order The order to fulfill, a.k.a. "take"
+  * @param accountAddress The taker's wallet address
+  * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+  * @param referrerAddress The optional address that referred the order
+  * @returns Transaction data for calling _AtomicMatch
   */
   public async getFulfillOrderTxnData({
     order,
@@ -1226,18 +1232,72 @@ export class OpenSeaPort {
       accountAddress,
       metadata,
     });
-
-    // await this._confirmTransaction(
-    //   transactionHash,
-    //   EventType.MatchOrders,
-    //   "Fulfilling order",
-    //   async () => {
-    //     const isOpen = await this._validateOrder(order);
-    //     return !isOpen;
-    //   }
-    // );
     return abiEncode;
   }
+
+  /**
+ * Fullfill or "take" an order for an asset, either a buy or sell order, ability to adjust gas
+ * @param param0 __namedParamaters Object
+ * @param order The order to fulfill, a.k.a. "take"
+ * @param accountAddress The taker's wallet address
+ * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+ * @param referrerAddress The optional address that referred the order
+ * @param maxPriorityFeePerGas Maximum gas limit for miner in WEI
+ * @param maxFeePerGas Maximum gas for the transaction in WEI
+ * @returns Transaction hash for fulfilling the order
+ */
+  public async fulfillOrderGasAdjust({
+    order,
+    accountAddress,
+    recipientAddress,
+    referrerAddress,
+    maxPriorityFeePerGas,
+    maxFeePerGas
+  }: {
+    order: Order;
+    accountAddress: string;
+    recipientAddress?: string;
+    referrerAddress?: string;
+    maxPriorityFeePerGas?: string;
+    maxFeePerGas: string;
+  }): Promise<string> {
+    const matchingOrder = this._makeMatchingOrder({
+      order,
+      accountAddress,
+      recipientAddress: recipientAddress || accountAddress,
+    });
+
+    const { buy, sell } = assignOrdersToSides(order, matchingOrder);
+
+    const metadata = this._getMetadata(order, referrerAddress);
+    const transactionData = await this._atomicMatchData({
+      buy,
+      sell,
+      accountAddress,
+      metadata,
+    });
+    const data = transactionData.txnAbiEncode
+    const value = transactionData.txnData.value
+
+    const txn = {
+      from: accountAddress,
+      to: order.exchange,
+      value: value.toString(),
+      data: data
+    }
+
+    if (maxPriorityFeePerGas){
+      txn['maxPriorityFeePerGas'] = this.web3.utils.toWei(maxPriorityFeePerGas, 'wei')
+    }
+    if (maxFeePerGas){
+      txn['maxFeePerGas'] = this.web3.utils.toWei(maxFeePerGas, 'wei')
+    }
+
+    const transaction = await this.web3.eth.sendTransaction(txn)
+
+    return transaction.transactionHash
+  }
+
 
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
@@ -4276,41 +4336,11 @@ export class OpenSeaPort {
     metadata?: string;
   }) {
     let value;
-    // let shouldValidateBuy = true;
-    // let shouldValidateSell = true;
 
-    // // Only check buy, but shouldn't matter as they should always be equal
-    // if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-    //   // USER IS THE SELLER, only validate the buy order
-    //   await this._sellOrderValidationAndApprovals({
-    //     order: sell,
-    //     accountAddress,
-    //   });
-    //   shouldValidateSell = false;
-    // } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-    //   // USER IS THE BUYER, only validate the sell order
-    //   await this._buyOrderValidationAndApprovals({
-    //     order: buy,
-    //     counterOrder: sell,
-    //     accountAddress,
-    //   });
-    //   shouldValidateBuy = false;
-
-      // If using ETH to pay, set the value of the transaction to the current price
-      if (buy.paymentToken == NULL_ADDRESS) {
-        value = await this._getRequiredAmountForTakingSellOrder(sell);
-      }
-    // } else {
-    //   // User is neither - matching service
-    // }
-
-    // await this._validateMatch({
-    //   buy,
-    //   sell,
-    //   accountAddress,
-    //   shouldValidateBuy,
-    //   shouldValidateSell,
-    // });
+    // If using ETH to pay, set the value of the transaction to the current price
+    if (buy.paymentToken == NULL_ADDRESS) {
+      value = await this._getRequiredAmountForTakingSellOrder(sell);
+    }
 
     this._dispatch(EventType.MatchOrders, {
       buy,
