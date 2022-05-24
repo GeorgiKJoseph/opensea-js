@@ -806,6 +806,80 @@ export class OpenSeaPort {
   }
 
   /**
+   * Create a buy order to make an offer on an asset and returns the transaction data.
+   * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
+   * @param param0 __namedParameters Object
+   * @param asset The asset to trade
+   * @param accountAddress Address of the maker's wallet
+   * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+   * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
+   * @param expirationTime Expiration time for the order, in seconds.
+   * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
+   * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
+   * @param referrerAddress The optional address that referred the order
+   */
+   public async createBuyOrderTxnData({
+    asset,
+    accountAddress,
+    startAmount,
+    quantity = 1,
+    expirationTime = getMaxOrderExpirationTimestamp(),
+    paymentTokenAddress,
+    sellOrder,
+    referrerAddress,
+  }: {
+    asset: Asset;
+    accountAddress: string;
+    startAmount: number;
+    quantity?: number;
+    expirationTime?: number;
+    paymentTokenAddress?: string;
+    sellOrder?: Order;
+    referrerAddress?: string;
+  }): Promise<Order> {
+    paymentTokenAddress =
+      paymentTokenAddress ||
+      WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address;
+    if (!paymentTokenAddress) {
+      throw new Error("Payment token required");
+    }
+
+    const order = await this._makeBuyOrder({
+      asset,
+      quantity,
+      accountAddress,
+      startAmount,
+      expirationTime,
+      paymentTokenAddress,
+      extraBountyBasisPoints: 0,
+      sellOrder,
+      referrerAddress,
+    });
+
+    // NOTE not in Wyvern exchange code:
+    // frontend checks to make sure
+    // token is approved and sufficiently available
+    await this._buyOrderValidationAndApprovals({ order, accountAddress });
+    const hashedOrder = {
+      ...order,
+      hash: getOrderHash(order),
+    };
+    let signature;
+    try {
+      signature = await this.authorizeOrder(hashedOrder);
+    } catch (error) {
+      console.error(error);
+      throw new Error("You declined to authorize your offer");
+    }
+
+    const orderWithSignature = {
+      ...hashedOrder,
+      ...signature,
+    };
+    return orderWithSignature
+  }
+
+  /**
    * Create a sell order to auction an asset.
    * Will throw a 'You do not own enough of this asset' error if the maker doesn't have the asset or not enough of it to sell the specific `quantity`.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
