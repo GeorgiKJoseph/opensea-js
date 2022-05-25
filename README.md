@@ -31,6 +31,27 @@ const data = tnxParams.txnAbiEncode
 const value = txnParams.value.toString()
 ```
 
+## Making Offers - Get http request payload.
+
+Get payload for the bid request.
+```js
+const TOKEN_CONTRACT_ADDRESS = '<< NFT contract address >>'
+const TOKEN_ID = 10
+const MAKER_ACCOUNT_ADDRESS = '<< maker account address >>'
+const BID_AMOUNT = 0.01 // in ETH
+const EXPIRATION_TIME = 1653762600 //epoch
+
+const offer = await seaport.createBuyOrderTxnData({
+    asset: {
+        tokenId: TOKEN_CONTRACT_ADDRESS,
+        tokenAddress: TOKEN_ID
+    },
+    accountAddress: MAKER_ACCOUNT_ADDRESS,
+    startAmount: BID_AMOUNT,
+    expirationTime: EXPIRATION_TIME
+})
+```
+
 > None of the functions from standard opensea-js package have been altered.
 
 ## Reference
