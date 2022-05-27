@@ -389,6 +389,7 @@ export class OpenSeaAPI {
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
         ...(opts.headers || {}),
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
       },
     };
 
@@ -398,6 +399,9 @@ export class OpenSeaAPI {
         100
       )}...`
     );
+
+    console.log('finalUrl:', finalUrl)
+    console.log('finalOpts:', finalOpts)
 
     return fetch(finalUrl, finalOpts).then(async (res) =>
       this._handleApiResponse(res)
