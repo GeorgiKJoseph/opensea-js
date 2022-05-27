@@ -357,6 +357,8 @@ export class OpenSeaAPI {
       ...opts,
     };
 
+    console.log('apiPath:', apiPath)
+    console.log('fetchOpts:', fetchOpts)
     const response = await this._fetch(apiPath, fetchOpts);
     return response.json();
   }
@@ -390,6 +392,7 @@ export class OpenSeaAPI {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
         ...(opts.headers || {}),
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+        
       },
     };
 
